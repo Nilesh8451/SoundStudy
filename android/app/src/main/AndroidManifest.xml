@@ -2,7 +2,9 @@
   package="com.remindme">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+<uses-permission
+  android:name="android.permission.FOREGROUND_SERVICE" />
+  
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
