@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
+  PermissionsAndroid,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -12,6 +13,7 @@ import TrackPlayer from 'react-native-track-player';
 import DocumentPicker from 'react-native-document-picker';
 import MusicControl from 'react-native-music-control';
 import {Command} from 'react-native-music-control';
+import MusicFiles from 'react-native-get-music-files';
 
 const App = () => {
   const [music, setMusic] = useState(null);
@@ -54,6 +56,77 @@ const App = () => {
   }, []);
 
   const isDarkMode = useColorScheme() === 'dark';
+
+
+  const getMusicFile =async ()=>{
+    try{
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      {
+        title: "Cool Photo App Camera Permission",
+        message:
+          "Cool Photo App needs access to your camera " +
+          "so you can take awesome pictures.",
+        buttonNeutral: "Ask Me Later",
+        buttonNegative: "Cancel",
+        buttonPositive: "OK"
+      }
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      console.log("You can use the camera");
+      MusicFiles.getAll({
+        blured : true, // works only when 'cover' is set to true
+        artist : true,
+        duration : true, //default : true
+        cover : false, //default : true,
+        genre : true,
+        title : true,
+        cover : true,
+        minimumSongDuration : 10000, // get songs bigger than 10000 miliseconds duration,
+        fields : ['title','albumTitle','genre','lyrics','artwork','duration'] // for iOs Version
+    }).then(tracks => {
+      console.log("Track files........",tracks)
+        // do your stuff...
+    }).catch(error => {
+      console.log("Track files error........",error)
+
+        // catch the error
+    })
+  
+    } else {
+      console.log("Camera permission denied");
+    }
+  } catch (err) {
+  }
+  }
+  
+  useEffect(()=>{
+
+   
+    // getMusicFile()
+    MusicFiles.getAll({
+      blured : true, // works only when 'cover' is set to true
+      artist : true,
+      // duration : true, //default : true
+      // cover : false, //default : true,
+      // genre : true,
+      // title : true,
+      // cover : true,
+      // minimumSongDuration : 10000, // get songs bigger than 10000 miliseconds duration,
+      // fields : ['title','albumTitle','genre','lyrics','artwork','duration'] // for iOs Version
+      }).then(tracks => {
+      console.log("Track files........",tracks)
+        // do your stuff...
+    }).catch(error => {
+      console.log("Track files error........",error)
+
+        // catch the error
+    })
+
+
+
+    
+  },[])
 
   const selectAudio = async () => {
     DocumentPicker.pick({
