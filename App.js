@@ -12,13 +12,98 @@ import TrackPlayer from 'react-native-track-player';
 import DocumentPicker from 'react-native-document-picker';
 import MusicControl from 'react-native-music-control';
 import {Command} from 'react-native-music-control';
+import RNFetchBlob from 'rn-fetch-blob';
+import RNFS from 'react-native-fs';
+import {PERMISSIONS, request} from 'react-native-permissions';
+
+const audioDirectory = '/storage/emulated/0/Music';
+
+import {useDispatch, useSelector} from 'react-redux';
+import {AddSONG} from './redux/action';
 
 const App = () => {
   const [music, setMusic] = useState(null);
+  const [musicsArr, setMusicArr] = useState([]);
+
+  const dispatch = useDispatch();
+
+  const musics = useSelector(state => state.MusicReducer.musics);
 
   const setupPlayer = async () => {
     await TrackPlayer.setupPlayer();
+
+    // let obj={
+    //   url:'file:///storage/emulated/0/Music/SpotiFlyer/Tracks/Ik_Mulaqaat.mp3',
+    //   name:"EK Mulakat"
+    // }
+    //     setMusic(obj)
+    //      TrackPlayer.add(obj);
+    //      TrackPlayer.play();
   };
+
+  const fetchData = path => {
+    console.log('PAth', path);
+    if (path?.includes('mp3')) {
+      console.log('inside if', path);
+      // const arr = [...musicsArr];
+
+      // arr.push(path);
+
+      dispatch(AddSONG(path));
+
+      // setMusicArr([...arr]);
+    } else {
+      console.log('Called in else....');
+      RNFS.readDir(path).then(res => {
+        console.log('RES____', res);
+        if (res?.path?.includes('mp3')) {
+          console.log('INSIDE IF>>>>>>>');
+        } else {
+          console.log('inside else....', res);
+          res.map(res2 => {
+            if (res2.path) {
+              console.log('Called in else if');
+              fetchData(res2.path);
+            }
+          });
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    request(PERMISSIONS.ANDROID.READ_MEDIA_AUDIO).then(result => {
+      // …
+
+      console.log('Result.....', result);
+      RNFS.readDir(audioDirectory)
+        .then(result => {
+          console.log('GOT RESULT', result);
+
+          // filter the files by extension
+          const audioFiles = result.filter(file => file);
+
+          return audioFiles;
+        })
+        .then(audioFiles => {
+          console.log('AUDIO FILES:', audioFiles);
+          //  RNFS.readDir(audioFiles[2].path).then((res)=>{
+          //   console.log('res',res)
+          //   RNFS.readDir(res[0].path).then((res2)=>{
+          //     console.log('res 2',res2)
+          //    })
+          //  })
+
+          audioFiles.map(res => {
+            console.log('RES.PATH', res.path);
+            fetchData(res.path);
+          });
+        })
+        .catch(err => {
+          console.log(err.message, err.code);
+        });
+    });
+  }, []);
 
   useEffect(() => {
     setupPlayer();
@@ -103,9 +188,23 @@ const App = () => {
     });
   };
 
+  useEffect(() => {
+    const musicPath = RNFetchBlob.fs.dirs.MusicDir;
+
+    RNFetchBlob.fs
+      .ls(musicPath)
+      .then(files => {
+        console.log('Music files:', files);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, []);
+
   return (
     <SafeAreaView
       style={{backgroundColor: 'white', flex: 1, alignItems: 'center'}}>
+      {console.log('musics', musics)}
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       {music?.name ? (
         <>
@@ -136,6 +235,7 @@ const App = () => {
               }}>
               <Text style={{color: 'white'}}>Play</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={{
                 width: 100,
