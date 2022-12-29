@@ -20,6 +20,7 @@ const audioDirectory = '/storage/emulated/0/Music';
 
 import {useDispatch, useSelector} from 'react-redux';
 import {AddSONG} from './redux/action';
+import {MusicList} from './components/MusicList';
 
 const App = () => {
   const [music, setMusic] = useState(null);
@@ -58,6 +59,7 @@ const App = () => {
         console.log('RES____', res);
         if (res?.path?.includes('mp3')) {
           console.log('INSIDE IF>>>>>>>');
+          dispatch(AddSONG(path));
         } else {
           console.log('inside else....', res);
           res.map(res2 => {
@@ -257,7 +259,7 @@ const App = () => {
         </>
       ) : null}
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={{
           width: 200,
           height: 50,
@@ -272,7 +274,9 @@ const App = () => {
         <Text style={{color: 'white'}}>
           {music?.name ? 'Select Another Audio' : 'Select Audio'}
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+      <MusicList />
     </SafeAreaView>
   );
 };
